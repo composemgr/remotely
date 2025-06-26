@@ -1,0 +1,40 @@
+# nginx proxy address - http://172.17.0.1:60334
+
+name: remotely
+x-logging: &default-logging
+  options:
+    max-size: '5m'
+    max-file: '1'
+  driver: json-file
+
+services:
+  app:
+    image: immybot/remotely:latest
+    container_name: remotely-app
+    hostname: ${BASE_HOST_NAME:-$HOSTNAME}
+    restart: always
+    pull_policy: always
+    logging: *default-logging
+    environment:
+      - ASPNETCORE_HTTP_PORTS=5000
+      - ASPNETCORE_ENVIRONMENT=Production
+      - Serilog__MinimumLevel__Override__System=Warning
+      - Remotely_ApplicationOptions__DbProvider=SQLite
+      - Remotely_ApplicationOptions__DockerGateway=172.28.0.1
+      - Serilog__MinimumLevel__Override__Microsoft.AspNetCore=Warning
+      - Remotely_ConnectionStrings__SQLite=Data Source=/app/AppData/Remotely.db
+    ports:
+      - '172.17.0.1:60334:5000'
+    volumes:
+      - './rootfs/data/remotely:/app/AppData'
+    networks:
+      - remotely
+
+networks:
+  remotely:
+    name: remotely
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+          gateway: 172.28.0.1
