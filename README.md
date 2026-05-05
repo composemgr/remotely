@@ -41,8 +41,8 @@ BASE_DOMAIN_NAME=
 
 ## 📂 Volumes
 
-- `./rootfs/config/remotely` - Configuration files
-- `./rootfs/data/remotely` - Application data
+- `./volumes/config/remotely` - Configuration files
+- `./volumes/data/remotely` - Application data
 
 ## 🔐 Security
 
