@@ -26,7 +26,7 @@ services:
     ports:
       - '172.17.0.1:60334:5000'
     volumes:
-      - './rootfs/data/remotely:/app/AppData'
+      - './volumes/data/remotely:/app/AppData'
     networks:
       - remotely
 
