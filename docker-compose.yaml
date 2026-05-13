@@ -24,12 +24,32 @@ services:
       Remotely_ApplicationOptions__DbProvider: SQLite
       Remotely_ApplicationOptions__DockerGateway: ${DOCKER_GATEWAY:-172.28.0.1}
       Remotely_ConnectionStrings__SQLite: "Data Source=/app/AppData/Remotely.db"
+      CONTAINER_NAME: remotely-app
+      HOSTNAME: ${BASE_HOST_NAME:-$HOSTNAME}
     ports:
       - '172.17.0.1:60334:5000'
     volumes:
       - './volumes/data/remotely:/app/AppData'
     networks:
       - remotely
+      - proxy
+      - cloudflare
+    labels:
+      - 'traefik.enable=true'
+      - 'cloudflare.enable=true'
+      - 'traefik.docker.network=proxy'
+      - 'cloudflare.service=http://remotely-app:5000'
+      - 'cloudflare.hostname=remotely.${CLOUDFLARE_ZONE_NAME:-}'
+      - 'traefik.http.routers.remotely-app.entrypoints=http'
+      - 'traefik.http.routers.remotely-app-secure.tls=true'
+      - 'traefik.http.routers.remotely-app.rule=Host($(${BASE_HOST_NAME:-$HOSTNAME}))'
+      - 'traefik.http.middlewares.remotely-app-https-redirect.redirectscheme.scheme=https'
+      - 'traefik.http.routers.remotely-app.middlewares=remotely-app-https-redirect'
+      - 'traefik.http.routers.remotely-app-secure.entrypoints=https'
+      - 'traefik.http.routers.remotely-app-secure.rule=Host($(${BASE_HOST_NAME:-$HOSTNAME}))'
+      - 'traefik.http.routers.remotely-app-secure.tls.certresolver=cloudflare'
+      - 'traefik.http.routers.remotely-app-secure.service=remotely-app'
+      - 'traefik.http.services.remotely-app.loadbalancer.server.port=5000'
 
 networks:
   remotely:
@@ -39,3 +59,7 @@ networks:
       config:
         - subnet: 172.28.0.0/16
           gateway: 172.28.0.1
+  proxy:
+    external: true
+  cloudflare:
+    external: true
