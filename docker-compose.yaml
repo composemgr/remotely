@@ -16,13 +16,14 @@ services:
     pull_policy: always
     logging: *default-logging
     environment:
-      ASPNETCORE_HTTP_PORTS: 5000
+      TZ: ${TZ:-America/New_York}
+      ASPNETCORE_HTTP_PORTS: "5000"
       ASPNETCORE_ENVIRONMENT: Production
       Serilog__MinimumLevel__Override__System: Warning
+      Serilog__MinimumLevel__Override__Microsoft.AspNetCore: Warning
       Remotely_ApplicationOptions__DbProvider: SQLite
-      Remotely_ApplicationOptions__DockerGateway: 172.28.0.1
-      - Serilog__MinimumLevel__Override__Microsoft.AspNetCore=Warning
-      Remotely_ConnectionStrings__SQLite: Data Source=/app/AppData/Remotely.db
+      Remotely_ApplicationOptions__DockerGateway: ${DOCKER_GATEWAY:-172.28.0.1}
+      Remotely_ConnectionStrings__SQLite: "Data Source=/app/AppData/Remotely.db"
     ports:
       - '172.17.0.1:60334:5000'
     volumes:
